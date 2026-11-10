@@ -7,8 +7,8 @@
 <link rel="apple-touch-icon" href="thebest-icon-48.png">
 <link rel="icon" href="thebest-icon-48.png">
 <title>Seja revenda The Best</title>
-<!-- Link de REVENDA (Roberto 09/11/2026). Etapa 1: página de apresentação. Etapa 2: o botão abre o chat da IA
-     (mesma função chat-site, conta abaixo) que cria o painel de 7 dias. Nada de número ou link de WhatsApp aqui. -->
+<!-- Link de REVENDA (Roberto 09-10/11/2026): apresentação + pedido do painel de 7 dias (função link-revenda-core).
+     Nada de número ou link de WhatsApp aqui. -->
 <style>
 :root{--bg:#0b1730;--top:#10264a;--panel:#0e1f3d;--card:#122a50;--txt:#eaf1ff;--sub:#8fb3ec;--line:#1c2f52;--azul:#1f5fbf;--verde:#25d366;--ouro:#f5c542}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -42,6 +42,22 @@ td:last-child{text-align:right;font-weight:700}
 .cta{display:block;width:100%;max-width:688px;margin:0 auto;padding:15px;border:0;border-radius:14px;background:var(--verde);color:#04210f;font:800 17px/1 inherit;cursor:pointer}
 .cta[disabled]{opacity:.75;cursor:default}
 .aviso{max-width:688px;margin:8px auto 0;text-align:center;color:var(--sub);font-size:13px;min-height:18px}
+.folha{position:fixed;inset:0;background:rgba(3,8,20,.72);display:none;align-items:flex-end;justify-content:center;z-index:10}
+.folha.on{display:flex}
+.caixa{width:100%;max-width:720px;background:var(--panel);border:1px solid var(--line);border-radius:18px 18px 0 0;padding:20px 16px max(18px,env(safe-area-inset-bottom))}
+.caixa h3{margin:0 0 6px;font-size:19px}
+.caixa p{margin:0 0 12px;color:var(--sub);font-size:14.5px}
+.campo{display:block;width:100%;margin:6px 0 12px;padding:13px 12px;border-radius:12px;border:1px solid #2f5fa8;background:#0b1a36;color:var(--txt);font:inherit}
+.linha{display:flex;gap:8px}
+.sec{flex:1;padding:14px;border-radius:12px;border:1px solid var(--line);background:transparent;color:var(--sub);font:700 15px/1 inherit;cursor:pointer}
+.pronto{background:var(--card);border:1px solid #2f8f5a;border-radius:14px;padding:14px;margin:8px 0 12px}
+.pronto b{display:block;margin-bottom:8px;color:#7be0a6}
+.dado{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+.dado:last-child{border-bottom:0}
+.dado span{color:var(--sub);font-size:13.5px}
+.dado code{font:700 17px/1.2 ui-monospace,Menlo,monospace;color:var(--txt)}
+.copiar{background:none;border:1px solid #2f5fa8;color:#9fd0ff;border-radius:10px;padding:6px 10px;font:600 13px/1 inherit;cursor:pointer}
+.erro{color:#ff9c9c;font-size:14px;min-height:18px;margin:-4px 0 10px}
 </style>
 </head>
 <body>
@@ -96,15 +112,84 @@ td:last-child{text-align:right;font-weight:700}
   <div class="aviso" id="aviso"></div>
 </div>
 
+<div class="folha" id="folha" role="dialog" aria-modal="true" aria-labelledby="tFolha">
+  <div class="caixa" id="caixaPedido">
+    <h3 id="tFolha">Seu painel grátis por 7 dias</h3>
+    <p>Painel abaixo da The Best com 1 crédito e testes à vontade. Depois, para continuar, é só comprar a partir de 5 créditos.</p>
+    <label>Seu nome<input class="campo" id="fNome" autocomplete="name" maxlength="60" placeholder="Como podemos te chamar?"></label>
+    <label>Seu WhatsApp (será o seu login)<input class="campo" id="fZap" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="(41) 99999-9999"></label>
+    <div class="erro" id="fErro"></div>
+    <div class="linha"><button class="sec" id="bFechar" type="button">Voltar</button><button class="cta" id="bCriar" type="button" style="flex:2">Criar meu painel</button></div>
+  </div>
+  <div class="caixa" id="caixaPronto" style="display:none">
+    <h3>Seu painel está pronto ✅</h3>
+    <p>Anote seu acesso. Ele vale por 7 dias, com 1 crédito e testes à vontade.</p>
+    <div class="pronto"><b>Acesso à Central The Best</b>
+      <div class="dado"><div><span>Usuário</span><br><code id="rLogin"></code></div><button class="copiar" data-c="rLogin" type="button">Copiar</button></div>
+      <div class="dado"><div><span>Senha</span><br><code id="rSenha"></code></div><button class="copiar" data-c="rSenha" type="button">Copiar</button></div>
+    </div>
+    <div class="nota" id="rAviso"></div>
+    <button class="cta" id="bCentral" type="button" style="margin-top:12px">Entrar na Central</button>
+  </div>
+</div>
+
 <script>
 (() => {
 const API = 'https://lsixmbsiptgznzsucyrn.supabase.co/functions/v1/chat-site';
 const CONTA = new URLSearchParams(location.search).get('c') || 'revendasbest';
-// Etapa 1: o atendimento da IA para revendas ainda está sendo montado.
-document.getElementById('bComecar').addEventListener('click', () => {
-  document.getElementById('aviso').textContent = 'O atendimento para novas revendas abre em breve.';
+const API_PAINEL = API.replace('/chat-site', '/link-revenda-core');
+const $ = id => document.getElementById(id);
+const KEY = 'tb_revenda_' + CONTA;
+let aparelho = '';
+try { aparelho = localStorage.getItem('tb_revenda_aparelho') || ''; } catch {}
+if (!/^[A-Za-z0-9-]{16,64}$/.test(aparelho)) {
+  aparelho = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2)).replace(/[^A-Za-z0-9-]/g, '').slice(0, 64);
+  try { localStorage.setItem('tb_revenda_aparelho', aparelho); } catch {}
+}
+const ERROS = {
+  LINK_REVENDA_NOME_INVALIDO: 'Digite seu nome.',
+  LINK_REVENDA_WHATSAPP_INVALIDO: 'Digite um WhatsApp do Brasil com DDD.',
+  LINK_REVENDA_JA_E_REVENDA: 'Este WhatsApp já tem cadastro na The Best. Fale com quem te passou o link.',
+  LINK_REVENDA_JA_PEDIU: 'Você já pediu o seu painel grátis neste WhatsApp ou neste aparelho.',
+  LINK_REVENDA_MUITAS_TENTATIVAS: 'Muitas tentativas por aqui. Tente de novo amanhã.',
+  LINK_REVENDA_LIMITE_DO_DIA: 'Os painéis grátis de hoje acabaram. Tente de novo amanhã.',
+  LINK_REVENDA_INATIVO: 'Este link não está ativo no momento.',
+  LINK_REVENDA_NAO_ENCONTRADO: 'Este link não está ativo no momento.',
+  LINK_REVENDA_EM_CONFERENCIA: 'Estamos conferindo o seu painel. Tente entrar daqui a alguns minutos ou fale com quem te passou o link.',
+};
+function mostrarPronto(d) {
+  $('rLogin').textContent = d.login; $('rSenha').textContent = d.senha || '(a que apareceu na criação)';
+  $('rAviso').textContent = (d.creditoEnviado === false ? 'Seu crédito está sendo liberado. ' : '')
+    + 'Válido até ' + new Date(d.expiraEm).toLocaleDateString('pt-BR') + '. Para continuar depois disso, compre a partir de 5 créditos dentro da Central.';
+  $('caixaPedido').style.display = 'none'; $('caixaPronto').style.display = 'block'; $('folha').classList.add('on');
+}
+function abrir() {
+  let salvo = null; try { salvo = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch {}
+  if (salvo && salvo.login) return mostrarPronto(salvo);
+  $('folha').classList.add('on'); setTimeout(() => $('fNome').focus(), 50);
+}
+$('bComecar').addEventListener('click', abrir);
+$('bFechar').addEventListener('click', () => $('folha').classList.remove('on'));
+$('bCentral').addEventListener('click', () => { location.href = 'https://centralthebest.com'; });
+document.querySelectorAll('.copiar').forEach(b => b.addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText($(b.dataset.c).textContent); b.textContent = 'Copiado ✓'; setTimeout(() => b.textContent = 'Copiar', 1800); } catch {}
+}));
+$('bCriar').addEventListener('click', async () => {
+  const nome = $('fNome').value.trim(), whatsapp = $('fZap').value.replace(/\D/g, '');
+  $('fErro').textContent = '';
+  if (nome.length < 2) { $('fErro').textContent = ERROS.LINK_REVENDA_NOME_INVALIDO; return; }
+  if (whatsapp.length < 10) { $('fErro').textContent = ERROS.LINK_REVENDA_WHATSAPP_INVALIDO; return; }
+  const b = $('bCriar'); b.disabled = true; b.textContent = 'Criando seu painel...';
+  try {
+    const r = await fetch(API_PAINEL, { method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ acao: 'pedirPainel', dominio: location.hostname, conta: CONTA, nome, whatsapp, aparelho }) });
+    let j = null; try { j = await r.json(); } catch {}
+    if (!j || !j.ok) { $('fErro').textContent = ERROS[j && j.error] || 'Não deu para criar agora. Tente de novo em alguns minutos.'; return; }
+    try { localStorage.setItem(KEY, JSON.stringify({ login: j.login, senha: j.senha, expiraEm: j.expiraEm, creditoEnviado: j.creditoEnviado })); } catch {}
+    mostrarPronto(j);
+  } catch { $('fErro').textContent = 'Sem conexão. Tente de novo.'; }
+  finally { b.disabled = false; b.textContent = 'Criar meu painel'; }
 });
-void API; void CONTA;
 })();
 </script>
 </body>
