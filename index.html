@@ -132,6 +132,7 @@ td:last-child{text-align:right;font-weight:700}
     <div class="nota" id="rAviso"></div>
     <button class="cta" id="bZapEu" type="button" style="margin-top:12px">Enviar para o meu WhatsApp</button>
     <div class="linha" style="margin-top:8px"><button class="sec" id="bCopiarTudo" type="button">Copiar tudo</button><button class="sec" id="bCentral" type="button">Entrar na Central</button></div>
+    <a class="sec" id="bSuporte" href="#" style="display:none;text-align:center;text-decoration:none;margin-top:8px">Falar com o suporte</a>
     <a class="sec" id="bApp" href="https://centralthebest.com/app.html" style="display:block;text-align:center;text-decoration:none;margin-top:8px">Instalar o app da Central</a>
   </div>
 </div>
@@ -160,11 +161,11 @@ const ERROS = {
   LINK_REVENDA_NAO_ENCONTRADO: 'Este link não está ativo no momento.',
   LINK_REVENDA_EM_CONFERENCIA: 'Estamos conferindo o seu painel. Tente entrar daqui a alguns minutos ou fale com quem te passou o link.',
 };
-let ultimo = null;
+let ultimo = null, suporte = null;
 const CENTRAL = 'https://centralthebest.com';
 function textoAcesso(d) {
   return 'Meu painel The Best (revenda)\n\nCentral: ' + CENTRAL + '\nUsuário: ' + d.login + '\nSenha: ' + (d.senha || '')
-    + '\nVálido até: ' + new Date(d.expiraEm).toLocaleDateString('pt-BR') + '\n\nApp da Central: ' + CENTRAL + '/app.html';
+    + '\nVálido até: ' + new Date(d.expiraEm).toLocaleDateString('pt-BR') + '\n\nApp da Central: ' + CENTRAL + '/app.html' + (suporte ? '\nSuporte: https://wa.me/' + suporte : '');
 }
 function mostrarPronto(d) {
   ultimo = d;
@@ -181,7 +182,9 @@ function abrir() {
 $('bComecar').addEventListener('click', abrir);
 // Dias do painel grátis escolhidos pela revenda dona do link (1 a 7).
 fetch(API_PAINEL, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ acao: 'config', dominio: location.hostname, conta: CONTA }) })
-  .then(r => r.json()).then(j => { const n = Number(j && j.painelDias); if (Number.isInteger(n) && n >= 1 && n <= 7)
+  .then(r => r.json()).then(j => { if (j && /^55[1-9][0-9]{9,10}$/.test(String(j.suporte || ''))) { suporte = String(j.suporte);
+    const b = $('bSuporte'); b.href = 'https://wa.me/' + suporte + '?text=' + encodeURIComponent('Olá! Peguei o painel grátis da The Best e preciso de ajuda.'); b.style.display = 'block'; }
+    const n = Number(j && j.painelDias); if (Number.isInteger(n) && n >= 1 && n <= 7)
     document.querySelectorAll('.dias').forEach(el => { el.textContent = n === 1 ? '1 dia' : n + ' dias'; }); }).catch(() => {});
 $('bFechar').addEventListener('click', () => $('folha').classList.remove('on'));
 // Entra na Central já logado: usuário e senha só no fragmento (#), que não vai para servidor; a Central apaga na hora.
