@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1730">
+<link rel="apple-touch-icon" href="thebest-icon-48.png">
+<link rel="icon" href="thebest-icon-48.png">
+<title>Seja revenda The Best</title>
+<!-- Link de REVENDA (Roberto 09/11/2026). Etapa 1: página de apresentação. Etapa 2: o botão abre o chat da IA
+     (mesma função chat-site, conta abaixo) que cria o painel de 7 dias. Nada de número ou link de WhatsApp aqui. -->
+<style>
+:root{--bg:#0b1730;--top:#10264a;--panel:#0e1f3d;--card:#122a50;--txt:#eaf1ff;--sub:#8fb3ec;--line:#1c2f52;--azul:#1f5fbf;--verde:#25d366;--ouro:#f5c542}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+main{max-width:720px;margin:0 auto;padding:0 16px 120px}
+header{display:flex;align-items:center;gap:10px;padding:14px 0;padding-top:max(14px,env(safe-area-inset-top))}
+header img{width:36px;height:36px;border-radius:9px}
+header b{font-size:17px}
+.hero{background:linear-gradient(160deg,#16356a,#0b1f42);border:1px solid var(--line);border-radius:18px;padding:22px 18px;margin-top:4px}
+.hero h1{margin:0 0 8px;font-size:26px;line-height:1.15}
+.hero p{margin:0;color:var(--sub)}
+.selo{display:inline-block;background:rgba(245,197,66,.14);color:var(--ouro);border:1px solid rgba(245,197,66,.35);border-radius:20px;padding:4px 10px;font-size:13px;font-weight:700;margin-bottom:12px}
+h2{font-size:18px;margin:26px 0 10px}
+.grid{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:560px){.grid{grid-template-columns:1fr 1fr}}
+.item{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.item b{display:block;margin-bottom:4px}
+.item span{color:var(--sub);font-size:14.5px}
+.passos{counter-reset:p;display:grid;gap:10px}
+.passo{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 14px 14px 54px}
+.passo:before{counter-increment:p;content:counter(p);position:absolute;left:14px;top:14px;width:28px;height:28px;border-radius:50%;background:var(--azul);display:grid;place-items:center;font-weight:800}
+.passo span{color:var(--sub);font-size:14.5px}
+table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+td{padding:10px 14px;border-bottom:1px solid var(--line);font-size:15px}
+tr:last-child td{border-bottom:0}
+td:last-child{text-align:right;font-weight:700}
+.nota{color:var(--sub);font-size:13.5px;margin-top:8px}
+.apps{display:flex;flex-wrap:wrap;gap:8px}
+.app{background:var(--card);border:1px solid #2f5fa8;border-radius:18px;padding:7px 12px;font-size:14px}
+.rodape{position:fixed;left:0;right:0;bottom:0;background:linear-gradient(transparent,var(--bg) 35%);padding:22px 16px max(14px,env(safe-area-inset-bottom))}
+.cta{display:block;width:100%;max-width:688px;margin:0 auto;padding:15px;border:0;border-radius:14px;background:var(--verde);color:#04210f;font:800 17px/1 inherit;cursor:pointer}
+.cta[disabled]{opacity:.75;cursor:default}
+.aviso{max-width:688px;margin:8px auto 0;text-align:center;color:var(--sub);font-size:13px;min-height:18px}
+</style>
+</head>
+<body>
+<main>
+  <header><img src="thebest-icon-48.png" alt=""><b>The Best</b></header>
+
+  <section class="hero">
+    <div class="selo">Painel grátis por 7 dias</div>
+    <h1>Seja revenda The Best</h1>
+    <p>Comece hoje com o seu próprio painel: faça testes à vontade, mostre para os seus clientes e só compre créditos quando quiser fechar.</p>
+  </section>
+
+  <h2>O que você recebe</h2>
+  <div class="grid">
+    <div class="item"><b>Central The Best</b><span>Seu painel no celular e no computador: teste rápido, renovação, clientes e créditos num lugar só.</span></div>
+    <div class="item"><b>Pix automático</b><span>Seus clientes pagam pelo Pix e renovam sozinhos, direto na sua conta.</span></div>
+    <div class="item"><b>App do cliente</b><span>Seu cliente acompanha o plano, paga e fala com você pelo app da The Best.</span></div>
+    <div class="item"><b>Suporte de verdade</b><span>Grupos de suporte no WhatsApp e no Telegram, com avisos e canal para reportar conteúdo.</span></div>
+    <div class="item"><b>Jogos do dia</b><span>Todo dia postamos os jogos para você divulgar aos seus clientes.</span></div>
+    <div class="item"><b>Vídeo-aulas</b><span>Passo a passo de instalação dos aplicativos para mandar aos seus clientes.</span></div>
+  </div>
+
+  <h2>Aplicativos parceiros</h2>
+  <div class="apps">
+    <span class="app">Max Player</span><span class="app">HD Player</span><span class="app">Zuxo</span>
+    <span class="app">T Play</span><span class="app">UTM Play</span><span class="app">ClouDDy</span>
+  </div>
+  <div class="nota">Funciona em Smart TV (Samsung, LG, Roku e outras), TV Box, Fire Stick, celular e computador. A gente indica o app certo para cada aparelho.</div>
+
+  <h2>Como começar</h2>
+  <div class="passos">
+    <div class="passo"><b>Crie seu painel grátis</b><br><span>Válido por 7 dias, com testes livres para você e para os seus clientes.</span></div>
+    <div class="passo"><b>Compre seus créditos</b><br><span>A partir de 5 créditos, pelo Pix. Seu painel fica definitivo na hora.</span></div>
+    <div class="passo"><b>Entre nos grupos e venda</b><br><span>Depois da primeira compra você recebe os convites dos grupos de suporte.</span></div>
+  </div>
+
+  <h2>Tabela de créditos</h2>
+  <table>
+    <tr><td>5 a 9 créditos</td><td>R$ 12,00 cada</td></tr>
+    <tr><td>10 a 19 créditos</td><td>R$ 11,00 cada</td></tr>
+    <tr><td>20 a 49 créditos</td><td>R$ 10,00 cada</td></tr>
+    <tr><td>50 a 99 créditos</td><td>R$ 9,00 cada</td></tr>
+    <tr><td>100 a 299 créditos</td><td>R$ 8,00 cada</td></tr>
+    <tr><td>300 a 999 créditos</td><td>R$ 7,00 cada</td></tr>
+    <tr><td>1000 ou mais</td><td>R$ 6,50 cada</td></tr>
+  </table>
+  <div class="nota">1 crédito = 1 mês de 1 cliente. Você define o preço que cobra dos seus clientes.</div>
+</main>
+
+<div class="rodape">
+  <button class="cta" id="bComecar">Quero meu painel grátis</button>
+  <div class="aviso" id="aviso"></div>
+</div>
+
+<script>
+(() => {
+const API = 'https://lsixmbsiptgznzsucyrn.supabase.co/functions/v1/chat-site';
+const CONTA = new URLSearchParams(location.search).get('c') || 'revendasbest';
+// Etapa 1: o atendimento da IA para revendas ainda está sendo montado.
+document.getElementById('bComecar').addEventListener('click', () => {
+  document.getElementById('aviso').textContent = 'O atendimento para novas revendas abre em breve.';
+});
+void API; void CONTA;
+})();
+</script>
+</body>
+</html>
