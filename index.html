@@ -57,6 +57,7 @@ td:last-child{text-align:right;font-weight:700}
 .dado span{color:var(--sub);font-size:13.5px}
 .dado code{font:700 17px/1.2 ui-monospace,Menlo,monospace;color:var(--txt)}
 .copiar{background:none;border:1px solid #2f5fa8;color:#9fd0ff;border-radius:10px;padding:6px 10px;font:600 13px/1 inherit;cursor:pointer}
+.ddi{display:flex;align-items:center;gap:8px;margin:6px 0 12px}.ddi span{padding:13px 12px;border-radius:12px;border:1px solid #2f5fa8;background:#0b1a36;font-weight:700}.ddi .campo{margin:0;flex:1}
 .erro{color:#ff9c9c;font-size:14px;min-height:18px;margin:-4px 0 10px}
 </style>
 </head>
@@ -117,7 +118,7 @@ td:last-child{text-align:right;font-weight:700}
     <h3 id="tFolha">Seu painel grátis por <span class="dias">7 dias</span></h3>
     <p>Painel abaixo da The Best com 1 crédito e testes à vontade. Depois, para continuar, é só comprar a partir de 5 créditos.</p>
     <label>Seu nome<input class="campo" id="fNome" autocomplete="name" maxlength="60" placeholder="Como podemos te chamar?"></label>
-    <label>Seu WhatsApp (será o seu login)<input class="campo" id="fZap" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="(41) 99999-9999"></label>
+    <label>Seu WhatsApp (será o seu login)<div class="ddi"><span>+55</span><input class="campo" id="fZap" inputmode="tel" autocomplete="tel-national" maxlength="16" placeholder="41 99999-9999"></div></label>
     <div class="erro" id="fErro"></div>
     <div class="linha"><button class="sec" id="bFechar" type="button">Voltar</button><button class="cta" id="bCriar" type="button" style="flex:2">Criar meu painel</button></div>
   </div>
@@ -129,7 +130,9 @@ td:last-child{text-align:right;font-weight:700}
       <div class="dado"><div><span>Senha</span><br><code id="rSenha"></code></div><button class="copiar" data-c="rSenha" type="button">Copiar</button></div>
     </div>
     <div class="nota" id="rAviso"></div>
-    <button class="cta" id="bCentral" type="button" style="margin-top:12px">Entrar na Central</button>
+    <button class="cta" id="bZapEu" type="button" style="margin-top:12px">Enviar para o meu WhatsApp</button>
+    <div class="linha" style="margin-top:8px"><button class="sec" id="bCopiarTudo" type="button">Copiar tudo</button><button class="sec" id="bCentral" type="button">Entrar na Central</button></div>
+    <a class="sec" id="bApp" href="https://centralthebest.com/app.html" style="display:block;text-align:center;text-decoration:none;margin-top:8px">Instalar o app da Central</a>
   </div>
 </div>
 
@@ -157,7 +160,14 @@ const ERROS = {
   LINK_REVENDA_NAO_ENCONTRADO: 'Este link não está ativo no momento.',
   LINK_REVENDA_EM_CONFERENCIA: 'Estamos conferindo o seu painel. Tente entrar daqui a alguns minutos ou fale com quem te passou o link.',
 };
+let ultimo = null;
+const CENTRAL = 'https://centralthebest.com';
+function textoAcesso(d) {
+  return 'Meu painel The Best (revenda)\n\nCentral: ' + CENTRAL + '\nUsuário: ' + d.login + '\nSenha: ' + (d.senha || '')
+    + '\nVálido até: ' + new Date(d.expiraEm).toLocaleDateString('pt-BR') + '\n\nApp da Central: ' + CENTRAL + '/app.html';
+}
 function mostrarPronto(d) {
+  ultimo = d;
   $('rLogin').textContent = d.login; $('rSenha').textContent = d.senha || '(a que apareceu na criação)';
   $('rAviso').textContent = (d.creditoEnviado === false ? 'Seu crédito está sendo liberado. ' : '')
     + 'Válido até ' + new Date(d.expiraEm).toLocaleDateString('pt-BR') + '. Para continuar depois disso, compre a partir de 5 créditos dentro da Central.';
@@ -174,15 +184,34 @@ fetch(API_PAINEL, { method: 'POST', headers: { 'content-type': 'application/json
   .then(r => r.json()).then(j => { const n = Number(j && j.painelDias); if (Number.isInteger(n) && n >= 1 && n <= 7)
     document.querySelectorAll('.dias').forEach(el => { el.textContent = n === 1 ? '1 dia' : n + ' dias'; }); }).catch(() => {});
 $('bFechar').addEventListener('click', () => $('folha').classList.remove('on'));
-$('bCentral').addEventListener('click', () => { location.href = 'https://centralthebest.com'; });
+// Entra na Central já logado: usuário e senha só no fragmento (#), que não vai para servidor; a Central apaga na hora.
+$('bCentral').addEventListener('click', () => {
+  if (!ultimo || !ultimo.senha) { location.href = CENTRAL; return; }
+  const b64 = btoa(unescape(encodeURIComponent(JSON.stringify({ u: String(ultimo.login), s: String(ultimo.senha) }))))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  location.href = CENTRAL + '/#painel=' + b64;
+});
+// Guarda o acesso no WhatsApp da própria pessoa (ela manda para si mesma).
+$('bZapEu').addEventListener('click', () => {
+  if (!ultimo) return;
+  const n = String(ultimo.login || '').replace(/\D/g, '');
+  location.href = 'https://wa.me/' + n + '?text=' + encodeURIComponent(textoAcesso(ultimo));
+});
+$('bCopiarTudo').addEventListener('click', async () => {
+  if (!ultimo) return;
+  try { await navigator.clipboard.writeText(textoAcesso(ultimo)); $('bCopiarTudo').textContent = 'Copiado ✓'; setTimeout(() => $('bCopiarTudo').textContent = 'Copiar tudo', 1800); } catch {}
+});
 document.querySelectorAll('.copiar').forEach(b => b.addEventListener('click', async () => {
   try { await navigator.clipboard.writeText($(b.dataset.c).textContent); b.textContent = 'Copiado ✓'; setTimeout(() => b.textContent = 'Copiar', 1800); } catch {}
 }));
 $('bCriar').addEventListener('click', async () => {
-  const nome = $('fNome').value.trim(), whatsapp = $('fZap').value.replace(/\D/g, '');
+  const nome = $('fNome').value.trim();
+  let local = $('fZap').value.replace(/\D/g, '').replace(/^0+/, '');
+  if (local.length >= 12 && local.startsWith('55')) local = local.slice(2);
+  const whatsapp = '55' + local; // login = 55 + DDD + número, só números
+  if (local.length < 10 || local.length > 11) { $('fErro').textContent = ERROS.LINK_REVENDA_WHATSAPP_INVALIDO; return; }
   $('fErro').textContent = '';
   if (nome.length < 2) { $('fErro').textContent = ERROS.LINK_REVENDA_NOME_INVALIDO; return; }
-  if (whatsapp.length < 10) { $('fErro').textContent = ERROS.LINK_REVENDA_WHATSAPP_INVALIDO; return; }
   const b = $('bCriar'); b.disabled = true; b.textContent = 'Criando seu painel...';
   try {
     const r = await fetch(API_PAINEL, { method: 'POST', headers: { 'content-type': 'application/json' },
